@@ -6,7 +6,17 @@ require './environments'
 posts = [{title: "First Post", body: "content of first post"},{title: "Second Post", body: "Hellow World 2!"}]
 
 # Models
-class Post < ActiveRecord::Base
+class Letter < ActiveRecord::Base
+  has_many :words
+end
+
+class Word < ActiveRecord::Base
+  belongs_to :word
+  has_many :shortdefs
+end
+
+class Shortdefs < ActiveRecord::Base
+  belongs_to :word
 end
 
 # Endpoints
