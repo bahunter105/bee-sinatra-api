@@ -1,7 +1,15 @@
 require 'sinatra'
+require 'sinatra/activerecord'
+require './environments'
 
+# Data
 posts = [{title: "First Post", body: "content of first post"},{title: "Second Post", body: "Hellow World 2!"}]
 
+# Models
+class Post < ActiveRecord::Base
+end
+
+# Endpoints
 get '/' do
   "Hello World"
 end
