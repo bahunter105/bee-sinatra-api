@@ -22,6 +22,9 @@ end
 # Endpoints
 get '/' do
   "Hello World"
+  letters = Letter.new(letter: "ahunter")
+  letters.save
+  "#{letters}"
 end
 
 ## Custom Method for Getting Request body
