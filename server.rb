@@ -1,6 +1,8 @@
 require 'sinatra'
 require 'sinatra/activerecord'
 require './environments'
+set :database_file, './config/database.yml'
+
 
 # Data
 posts = [{title: "First Post", body: "content of first post"},{title: "Second Post", body: "Hellow World 2!"}]
