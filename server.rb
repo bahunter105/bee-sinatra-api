@@ -3,6 +3,7 @@ require 'sinatra/activerecord'
 require './environments'
 require 'json'
 require 'open-uri'
+require 'dotenv/load'
 
 
 # Data
@@ -16,24 +17,17 @@ end
 
 class Word < ActiveRecord::Base
   belongs_to :letter
-  has_many :shortdefs
+  serialize :shortdef
 end
 
-class Shortdefs < ActiveRecord::Base
-  belongs_to :word
-end
 
 # Endpoints
 get '/' do
-  # "Hello World"
-  # letters = Letter.new(letter: "hihunter")
-  # letters.save
   url = "https://raw.githubusercontent.com/dwyl/english-words/master/words_dictionary.json"
   word_serialized = URI.open(url).read
   gitwords = JSON.parse(word_serialized)
   alf = ('a'..'z').to_a
   letters = alf.sample(7)
-  # letters = ["b", "l", "f", "g", "e", "t", "p"]
   until letters.join.match?(/[a,e,i,o,u]/) do
     letters = alf.sample(7)
   end
@@ -44,42 +38,32 @@ get '/' do
   gitwords.each_key do |key|
     if (key.include? letters[0]) && (/^[#{letters}]{4,}$/ === key)
       prefiltered_words << key
-      # word = Word.new(word: key)
-      # word.letter = new_letters
-      # word.save
     end
   end
   word_list_check(prefiltered_words, new_letters)
 
-  posts = [{letters: Letter.last.to_json, words: Letter.last.words.to_json }]
-  return posts.to_json
-  # return Letter.last.to_json
+  words_and_def = {}
+  Letter.last.words.each do |word|
+    words_and_def[word.word] = word.shortdef
+  end
+
+  json = [ letters: new_letters.letter, date: new_letters.created_at, words: words_and_def]
+
+  return JSON.generate(json)
 end
 
 def word_list_check(prefiltered_words, new_letters)
-    # words_and_def = {}
-    prefiltered_words.each do |word|
-      # url = "https://dictionaryapi.com/api/v3/references/collegiate/json/#{word}?key=#{ENV['DICTIONARY_API_KEY']}"
-      url = "https://dictionaryapi.com/api/v3/references/collegiate/json/#{word}?key=ac861c65-0f06-4568-a306-cde44e820298"
-      word_def_serialized = URI.open(url).read
-      word_def = JSON.parse(word_def_serialized)
-      unless word_def[0]['shortdef'].nil?
-        # words_and_def[:"#{word}"] = word_def[0]['shortdef']
-        new_word = Word.new(word: word)
-        new_word.letter = new_letters
-        new_word.save
-      end
+  prefiltered_words.each do |word|
+    url = "https://dictionaryapi.com/api/v3/references/collegiate/json/#{word}?key=#{ENV['DICTIONARY_API_KEY']}"
+    word_def_serialized = URI.open(url).read
+    word_def = JSON.parse(word_def_serialized)
+    unless word_def[0]['shortdef'].nil?
+      new_word = Word.new(word: word, shortdef: word_def[0]['shortdef'])
+      new_word.letter = new_letters
+      new_word.save
     end
-    # filtered_words = []
-    # words_and_def.each_key do |key|
-    #   filtered_words << key
-    # end
-    # return filtered_words
   end
-
-
-
-
+end
 
 
 # ## Custom Method for Getting Request body
