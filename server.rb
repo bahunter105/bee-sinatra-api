@@ -15,7 +15,7 @@ class Letter < ActiveRecord::Base
 end
 
 class Word < ActiveRecord::Base
-  belongs_to :word
+  belongs_to :letter
   has_many :shortdefs
 end
 
@@ -30,7 +30,7 @@ get '/' do
   # letters.save
   url = "https://raw.githubusercontent.com/dwyl/english-words/master/words_dictionary.json"
   word_serialized = URI.open(url).read
-  word = JSON.parse(word_serialized)
+  gitwords = JSON.parse(word_serialized)
   alf = ('a'..'z').to_a
   letters = alf.sample(7)
   # letters = ["b", "l", "f", "g", "e", "t", "p"]
@@ -40,32 +40,41 @@ get '/' do
   new_letters = Letter.new(letter: letters.join)
   new_letters.save
 
-  # prefiltered_words = []
-  # word.each_key do |key|
-  #   if (key.include? letters[0]) && (/^[#{letters}]{4,}$/ === key)
-  #     prefiltered_words << key
-  #   end
-  # end
-  # filtered_words = word_list_check(prefiltered_words)
+  prefiltered_words = []
+  gitwords.each_key do |key|
+    if (key.include? letters[0]) && (/^[#{letters}]{4,}$/ === key)
+      prefiltered_words << key
+      # word = Word.new(word: key)
+      # word.letter = new_letters
+      # word.save
+    end
+  end
+  word_list_check(prefiltered_words, new_letters)
 
-  return Letter.last.to_json
+  posts = [{letters: Letter.last.to_json, words: Letter.last.words.to_json }]
+  return posts.to_json
+  # return Letter.last.to_json
 end
 
-def word_list_check(prefiltered_words)
-    words_and_def = {}
+def word_list_check(prefiltered_words, new_letters)
+    # words_and_def = {}
     prefiltered_words.each do |word|
-      url = "https://dictionaryapi.com/api/v3/references/collegiate/json/#{word}?key=#{ENV['DICTIONARY_API_KEY']}"
+      # url = "https://dictionaryapi.com/api/v3/references/collegiate/json/#{word}?key=#{ENV['DICTIONARY_API_KEY']}"
+      url = "https://dictionaryapi.com/api/v3/references/collegiate/json/#{word}?key=ac861c65-0f06-4568-a306-cde44e820298"
       word_def_serialized = URI.open(url).read
       word_def = JSON.parse(word_def_serialized)
       unless word_def[0]['shortdef'].nil?
-        words_and_def[:"#{word}"] = word_def[0]['shortdef']
+        # words_and_def[:"#{word}"] = word_def[0]['shortdef']
+        new_word = Word.new(word: word)
+        new_word.letter = new_letters
+        new_word.save
       end
     end
-    filtered_words = []
-    words_and_def.each_key do |key|
-      filtered_words << key
-    end
-    return filtered_words
+    # filtered_words = []
+    # words_and_def.each_key do |key|
+    #   filtered_words << key
+    # end
+    # return filtered_words
   end
 
 
