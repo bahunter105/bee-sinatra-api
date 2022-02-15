@@ -25,7 +25,8 @@ end
 # Scheduler
 scheduler = Rufus::Scheduler.new
 
-scheduler.every '1m' do
+scheduler.cron '25,30 14 * * *' do
+# scheduler.every '24h' do
   # new_letters = Letter.new(letter: "12345")
   # new_letters.save
   url = "https://raw.githubusercontent.com/dwyl/english-words/master/words_dictionary.json"
