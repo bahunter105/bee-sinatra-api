@@ -9,8 +9,6 @@ require 'rufus-scheduler'
 
 # Data
 set :database_file, './config/database.yml'
-posts = [{title: "First Post", body: "content of first post"},{title: "Second Post", body: "Hellow World 2!"}]
-
 
 # Models
 class Letter < ActiveRecord::Base
@@ -25,10 +23,7 @@ end
 # Scheduler
 scheduler = Rufus::Scheduler.new
 
-scheduler.cron '25,30 14 * * *' do
-# scheduler.every '24h' do
-  # new_letters = Letter.new(letter: "12345")
-  # new_letters.save
+scheduler.cron '0 4 * * *' do
   url = "https://raw.githubusercontent.com/dwyl/english-words/master/words_dictionary.json"
   word_serialized = URI.open(url).read
   gitwords = JSON.parse(word_serialized)
@@ -49,19 +44,6 @@ scheduler.cron '25,30 14 * * *' do
   word_list_check(prefiltered_words, new_letters)
 end
 
-# Endpoints
-get '/' do
-  todays_letters = Letter.last
-  words_and_def = {}
-  todays_letters.words.each do |word|
-    words_and_def[word.word] = word.shortdef
-  end
-
-  json = [ letters: todays_letters.letter, date: todays_letters.created_at, words: words_and_def]
-
-  return JSON.generate(json)
-end
-
 def word_list_check(prefiltered_words, new_letters)
   prefiltered_words.each do |word|
     url = "https://dictionaryapi.com/api/v3/references/collegiate/json/#{word}?key=#{ENV['DICTIONARY_API_KEY']}"
@@ -75,6 +57,19 @@ def word_list_check(prefiltered_words, new_letters)
   end
 end
 
+# Endpoints
+get '/' do
+  todays_letters = Letter.last
+  words_and_def = {}
+  todays_letters.words.each do |word|
+    words_and_def[word.word] = word.shortdef
+  end
+
+  json = [{letters: todays_letters.letter, date: todays_letters.created_at, words: words_and_def}]
+  headers "Content-Type" => "application/json; charset=utf-8"
+  return json.to_json
+
+end
 
 # ## Custom Method for Getting Request body
 # def getBody (req)
