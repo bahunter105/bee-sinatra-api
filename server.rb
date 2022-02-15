@@ -4,11 +4,13 @@ require './environments'
 require 'json'
 require 'open-uri'
 require 'dotenv/load'
+require 'rufus-scheduler'
 
 
 # Data
 set :database_file, './config/database.yml'
 posts = [{title: "First Post", body: "content of first post"},{title: "Second Post", body: "Hellow World 2!"}]
+
 
 # Models
 class Letter < ActiveRecord::Base
@@ -20,9 +22,12 @@ class Word < ActiveRecord::Base
   serialize :shortdef
 end
 
+# Scheduler
+scheduler = Rufus::Scheduler.new
 
-# Endpoints
-get '/' do
+scheduler.every '1m' do
+  # new_letters = Letter.new(letter: "12345")
+  # new_letters.save
   url = "https://raw.githubusercontent.com/dwyl/english-words/master/words_dictionary.json"
   word_serialized = URI.open(url).read
   gitwords = JSON.parse(word_serialized)
@@ -41,13 +46,17 @@ get '/' do
     end
   end
   word_list_check(prefiltered_words, new_letters)
+end
 
+# Endpoints
+get '/' do
+  todays_letters = Letter.last
   words_and_def = {}
-  Letter.last.words.each do |word|
+  todays_letters.words.each do |word|
     words_and_def[word.word] = word.shortdef
   end
 
-  json = [ letters: new_letters.letter, date: new_letters.created_at, words: words_and_def]
+  json = [ letters: todays_letters.letter, date: todays_letters.created_at, words: words_and_def]
 
   return JSON.generate(json)
 end
