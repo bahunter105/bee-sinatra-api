@@ -19,30 +19,65 @@ class Word < ActiveRecord::Base
   serialize :shortdef
 end
 
-# Scheduler
+# Scheduler to get a new set of letters every day at 4am.
 scheduler = Rufus::Scheduler.new
 
 scheduler.cron '0 4 * * *' do
-  url = 'https://raw.githubusercontent.com/dwyl/english-words/master/words_dictionary.json'
-  word_serialized = URI.open(url).read
-  gitwords = JSON.parse(word_serialized)
+  # Randomly select 7 letters
   alf = ('a'..'z').to_a
   letters = alf.sample(7)
+  # Ensure at at least 1 vowel
   until letters.join.match?(/[a,e,i,o,u]/) do
     letters = alf.sample(7)
   end
+  # Create new Letter instance
   new_letters = Letter.new(letter: letters.join)
   new_letters.save
+  # Add date to allow instance to be searchable by date
   new_letters.date = Date.parse(new_letters.created_at.strftime('%d/%m/%Y'))
   new_letters.save
+  # Access GH database of English words and add to words that match letters
+  prefiltered_words = get_list_of_words(letters)
+  # Access Dictionary API and add words to database
+  word_list_check(prefiltered_words, new_letters)
+end
 
+# Endpoints
+# Index
+get '/' do
+  content_type 'application/json'
+  todays_letters = Letter.last
+  return convert_to_json(todays_letters)
+end
+
+# All Letters
+get '/all' do
+  content_type 'application/json'
+  all = Letter.all
+  all.to_json
+end
+
+# Get Letters By Date
+get '/:date' do
+  content_type 'application/json'
+  date = params["date"]
+  date_formatted = Date.iso8601(date)
+  letters = Letter.find_by(date: date_formatted)
+  return convert_to_json(letters)
+end
+
+# Custom Methods
+def get_list_of_words(letters)
+  url = 'https://raw.githubusercontent.com/dwyl/english-words/master/words_dictionary.json'
+  word_serialized = URI.open(url).read
+  gitwords = JSON.parse(word_serialized)
   prefiltered_words = []
   gitwords.each_key do |key|
     if (key.include? letters[0]) && (/^[#{letters}]{4,}$/ === key)
       prefiltered_words << key
     end
   end
-  word_list_check(prefiltered_words, new_letters)
+  prefiltered_words
 end
 
 def word_list_check(prefiltered_words, new_letters)
@@ -58,72 +93,13 @@ def word_list_check(prefiltered_words, new_letters)
   end
 end
 
-# Endpoints
-
-# Index
-get '/' do
-  content_type 'application/json'
-  todays_letters = Letter.last
-  words_and_def = {}
-  todays_letters.words.each do |word|
-    words_and_def[word.word] = word.shortdef
-  end
-
-  json = [{ letters: todays_letters.letter, date: todays_letters.date, words: words_and_def }]
-  return json.to_json
-end
-
-# All Letters
-get '/all' do
-  content_type 'application/json'
-  all = Letter.all
-  all.to_json
-end
-
-get '/:id' do
-  content_type 'application/json'
-  id = params["id"]
-  date = Date.iso8601(id)
-  letters = Letter.find_by(date: date)
+def convert_to_json(letters)
+  # get words and definitions
   words_and_def = {}
   letters.words.each do |word|
     words_and_def[word.word] = word.shortdef
   end
-
+  # set json format
   json = [{ letters: letters.letter, date: letters.date, words: words_and_def }]
-  return json.to_json
+  json.to_json
 end
-
-
-# ## Custom Method for Getting Request body
-# def getBody (req)
-#     ## Rewind the body in case it has already been read
-#     req.body.rewind
-#     ## parse the body
-#     return JSON.parse(req.body.read)
-# end
-
-# ## Index route
-# get '/posts' do
-#     # Return all the posts as JSON
-#     return posts.to_json
-# end
-
-# get '/posts/:id' do
-#     # return a particular post as json based on the id param from the url
-#     # Params always come to a string so we convert to an integer
-#     id = params["id"].to_i
-#     return posts[id].to_json
-# end
-
-# ## Create Route
-# post '/posts' do
-#     # Pass the request into the custom getBody function
-#     body = getBody(request)
-#     # create the new post
-#     new_post = {title: body["title"], body: body["body"]}
-#     # push the new post into the array
-#     posts.push(new_post)
-#     # return the new post
-#     return new_post.to_json
-# end
