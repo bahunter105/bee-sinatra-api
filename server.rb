@@ -23,7 +23,7 @@ end
 scheduler = Rufus::Scheduler.new
 
 # scheduler.cron '0 4 * * *' do
-scheduler.every '3h' do
+scheduler.every '10m' do
   # Randomly select 7 letters
   alf = ('a'..'z').to_a
   letters = alf.sample(7)
