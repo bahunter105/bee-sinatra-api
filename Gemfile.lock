@@ -12,7 +12,6 @@ GEM
       minitest (>= 5.1)
       tzinfo (~> 2.0)
     bond (0.5.1)
-    chronic (0.10.2)
     concurrent-ruby (1.1.9)
     dotenv (2.7.6)
     et-orbi (1.2.6)
@@ -65,11 +64,10 @@ GEM
       sinatra (>= 1.2.1)
     tzinfo (2.0.4)
       concurrent-ruby (~> 1.0)
-    whenever (1.0.0)
-      chronic (>= 0.6.3)
 
 PLATFORMS
   x86_64-darwin-20
+  x86_64-linux
 
 DEPENDENCIES
   activerecord
@@ -83,7 +81,6 @@ DEPENDENCIES
   sinatra-redirect-with-flash
   sqlite3
   tux
-  whenever
 
 BUNDLED WITH
    2.2.32
