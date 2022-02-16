@@ -6,7 +6,6 @@ require 'open-uri'
 require 'dotenv/load'
 require 'rufus-scheduler'
 
-
 # Data
 set :database_file, './config/database.yml'
 
@@ -24,7 +23,7 @@ end
 scheduler = Rufus::Scheduler.new
 
 scheduler.cron '0 4 * * *' do
-  url = "https://raw.githubusercontent.com/dwyl/english-words/master/words_dictionary.json"
+  url = 'https://raw.githubusercontent.com/dwyl/english-words/master/words_dictionary.json'
   word_serialized = URI.open(url).read
   gitwords = JSON.parse(word_serialized)
   alf = ('a'..'z').to_a
@@ -34,7 +33,7 @@ scheduler.cron '0 4 * * *' do
   end
   new_letters = Letter.new(letter: letters.join)
   new_letters.save
-  new_letters.date = Date.parse(new_letters.created_at.strftime("%d/%m/%Y"))
+  new_letters.date = Date.parse(new_letters.created_at.strftime('%d/%m/%Y'))
   new_letters.save
 
   prefiltered_words = []
@@ -67,10 +66,9 @@ get '/' do
     words_and_def[word.word] = word.shortdef
   end
 
-  json = [{letters: todays_letters.letter, date: todays_letters.date, words: words_and_def}]
-  headers "Content-Type" => "application/json; charset=utf-8"
+  json = [{ letters: todays_letters.letter, date: todays_letters.date, words: words_and_def }]
+  headers 'Content-Type' => 'application/json; charset=utf-8'
   return json.to_json
-
 end
 
 # ## Custom Method for Getting Request body
