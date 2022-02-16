@@ -59,7 +59,10 @@ def word_list_check(prefiltered_words, new_letters)
 end
 
 # Endpoints
+
+# Index
 get '/' do
+  content_type 'application/json'
   todays_letters = Letter.last
   words_and_def = {}
   todays_letters.words.each do |word|
@@ -67,9 +70,30 @@ get '/' do
   end
 
   json = [{ letters: todays_letters.letter, date: todays_letters.date, words: words_and_def }]
-  headers 'Content-Type' => 'application/json; charset=utf-8'
   return json.to_json
 end
+
+# All Letters
+get '/all' do
+  content_type 'application/json'
+  all = Letter.all
+  all.to_json
+end
+
+get '/:id' do
+  content_type 'application/json'
+  id = params["id"]
+  date = Date.iso8601(id)
+  letters = Letter.find_by(date: date)
+  words_and_def = {}
+  letters.words.each do |word|
+    words_and_def[word.word] = word.shortdef
+  end
+
+  json = [{ letters: letters.letter, date: letters.date, words: words_and_def }]
+  return json.to_json
+end
+
 
 # ## Custom Method for Getting Request body
 # def getBody (req)
