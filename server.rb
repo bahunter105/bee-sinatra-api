@@ -58,6 +58,13 @@ get '/all' do
   all.to_json
 end
 
+# All Words
+get '/words' do
+  content_type 'application/json'
+  all = Word.all
+  all.to_json
+end
+
 # Get Letters By Date
 get '/:date' do
   content_type 'application/json'
