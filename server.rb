@@ -16,7 +16,7 @@ end
 
 class Word < ActiveRecord::Base
   belongs_to :letter
-  serialize :shortdef
+  # serialize :shortdef
 end
 
 # Scheduler to get a new set of letters every day at 4am.
