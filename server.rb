@@ -34,6 +34,8 @@ scheduler.cron '0 4 * * *' do
   end
   new_letters = Letter.new(letter: letters.join)
   new_letters.save
+  new_letters.date = Date.parse(new_letters.created_at.strftime("%d/%m/%Y"))
+  new_letters.save
 
   prefiltered_words = []
   gitwords.each_key do |key|
@@ -65,7 +67,7 @@ get '/' do
     words_and_def[word.word] = word.shortdef
   end
 
-  json = [{letters: todays_letters.letter, date: todays_letters.created_at, words: words_and_def}]
+  json = [{letters: todays_letters.letter, date: todays_letters.date, words: words_and_def}]
   headers "Content-Type" => "application/json; charset=utf-8"
   return json.to_json
 
