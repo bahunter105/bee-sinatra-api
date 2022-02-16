@@ -3,7 +3,7 @@ require 'sinatra/activerecord'
 require './environments'
 require 'json'
 require 'open-uri'
-require 'dotenv/load'
+# require 'dotenv/load'
 require 'rufus-scheduler'
 
 # Data
