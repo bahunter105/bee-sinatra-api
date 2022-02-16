@@ -22,7 +22,7 @@ end
 # Scheduler to get a new set of letters every day at 4am.
 scheduler = Rufus::Scheduler.new
 
-scheduler.cron '0 4 * * *' do
+scheduler.cron '0 16 * * *' do
   # Randomly select 7 letters
   alf = ('a'..'z').to_a
   letters = alf.sample(7)
