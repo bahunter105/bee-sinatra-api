@@ -54,6 +54,7 @@ end
 # All Letters
 get '/all' do
   content_type 'application/json'
+  headers['Access-Control-Allow-Origin'] = '*'
   all = Letter.all
   all.to_json
 end
@@ -61,6 +62,7 @@ end
 # All Words
 get '/words' do
   content_type 'application/json'
+  headers['Access-Control-Allow-Origin'] = '*'
   all = Word.all
   all.to_json
 end
@@ -68,6 +70,7 @@ end
 # Get Letters By Date
 get '/:date' do
   content_type 'application/json'
+  headers['Access-Control-Allow-Origin'] = '*'
   date = params["date"]
   date_formatted = Date.iso8601(date)
   letters = Letter.find_by(date: date_formatted)
