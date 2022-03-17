@@ -48,6 +48,7 @@ end
 # Index
 get '/' do
   content_type 'application/json'
+  headers['Access-Control-Allow-Origin'] = '*'
   todays_letters = Letter.last
   return convert_to_json(todays_letters)
 end
